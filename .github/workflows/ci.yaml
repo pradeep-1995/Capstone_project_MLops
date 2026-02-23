@@ -16,7 +16,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
       - name: Cache pip dependencies
         uses: actions/cache@v3
@@ -28,7 +28,9 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install --upgrade pip
+          grep -v pywin32 requirements.txt > requirements-ci.txt
+          pip install -r requirements-ci.txt
           pip install dvc[s3]
 
       - name: run pipeline

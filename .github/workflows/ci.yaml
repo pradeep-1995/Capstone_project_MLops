@@ -38,3 +38,4 @@ jobs:
           CAPSTONE_TEST: ${{ secrets.MLOPS_TEST }}
         run: |
           dvc repro
+          

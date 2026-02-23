@@ -26,9 +26,5 @@ jobs:
       - name: run pipeline
         env:
           CAPSTONE_TEST: ${{ secrets.MLOPS_TEST }}
-        run:
-<<<<<<< HEAD
+        run: |
           dvc repro
-=======
-          dvc repro
->>>>>>> 4bec0170d94cb8ba51dd9f4c9a9c69bfc435b120

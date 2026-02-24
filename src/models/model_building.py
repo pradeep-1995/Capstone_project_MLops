@@ -70,8 +70,8 @@ def main():
     """Main function to execute the model training process."""
     try:
         # Load the preprocessed data
-        X_train = load_data(r'data\interim\X_train.csv')
-        y_train = load_data(r'data\interim\y_train.csv').squeeze()  # Convert DataFrame to Series if needed
+        X_train = load_data(os.path.join('data', 'interim', 'X_train.csv'))
+        y_train = load_data(os.path.join('data', 'interim', 'y_train.csv')).squeeze()  # Convert DataFrame to Series if needed
 
         # Load model parameters from YAML file
         params = load_params('params.yaml')
@@ -84,7 +84,7 @@ def main():
         model = train_model(X_train, y_train, n_estimators, max_depth, criterion, random_state)
 
         # Save the trained model
-        save_model(model, 'models/random_forest_model.pkl')
+        save_model(model, os.path.join('models', 'random_forest_model.pkl'))
 
     except Exception as e:
         logging.error('Error in main function: %s', e)

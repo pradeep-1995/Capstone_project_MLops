@@ -133,14 +133,14 @@ def main():
     mlflow.set_experiment('dvc_pipeline')
     with mlflow.start_run() as run:
         try:
-            clf = load_model('models/random_forest_model.pkl')
+            clf = load_model(os.path.join('models', 'random_forest_model.pkl'))
 
-            X_test = load_data('data/interim/X_test.csv').values
-            y_test = load_data('data/interim/y_test.csv').values.squeeze()
+            X_test = load_data(os.path.join('data', 'interim', 'X_test.csv')).values
+            y_test = load_data(os.path.join('data', 'interim', 'y_test.csv')).values.squeeze()
 
             metrics_dict = evaluate_model(clf, X_test, y_test)
 
-            log_metrics(metrics_dict, 'reports/metrics.json')
+            log_metrics(metrics_dict, os.path.join('reports', 'metrics.json'))
 
             #Log metrics to MLflow
             for metric_name, metric_value in metrics_dict.items():

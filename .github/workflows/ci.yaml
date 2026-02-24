@@ -32,6 +32,16 @@ jobs:
           pip install -r requirements.txt
           pip install dvc[s3]
 
+      - name: Set environment variables
+        run: |
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "COLLECTION_NAME=${{ secrets.COLLECTION_NAME }}" >> $GITHUB_ENV
+          echo "CONNECTION_URL=${{ secrets.CONNECTION_URL }}" >> $GITHUB_ENV
+          # Set defaults if not provided
+          if [ -z "${{ secrets.DB_NAME }}" ]; then echo "DB_NAME=testdb" >> $GITHUB_ENV; fi
+          if [ -z "${{ secrets.COLLECTION_NAME }}" ]; then echo "COLLECTION_NAME=test_collection" >> $GITHUB_ENV; fi
+          if [ -z "${{ secrets.CONNECTION_URL }}" ]; then echo "CONNECTION_URL=mongodb://localhost:27017" >> $GITHUB_ENV; fi
+
       - name: run pipeline
         env:
           CAPSTONE_TEST: ${{ secrets.MLOPS_TEST }}

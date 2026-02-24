@@ -116,7 +116,7 @@ def main():
         # Save the preprocessed data to a CSV file
         save_data(final_df, 'data/')
 
-    except pymongo.errors.ConnectionError as e:
+    except (pymongo.errors.ServerSelectionTimeoutError, TypeError, AttributeError) as e:
         logging.error('MongoDB connection error: %s', e)
         raise
 

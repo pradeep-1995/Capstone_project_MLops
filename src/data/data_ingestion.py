@@ -118,18 +118,10 @@ def main():
 
     except (pymongo.errors.ServerSelectionTimeoutError, TypeError, AttributeError) as e:
         logging.warning('MongoDB connection error (falling back to cached data): %s', e)
-        # Fall back to loading preprocessed data from CSV if it exists
-        # Use absolute path based on script location
-        script_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        cached_file = os.path.join(script_dir, 'data', 'preprocessed_data.csv')
-        logging.info('Looking for cached data at: %s', cached_file)
         
-        if os.path.exists(cached_file):
-            logging.info('Loading cached preprocessed data from CSV')
-            final_df = pd.read_csv(cached_file)
-        else:
-            logging.error('MongoDB connection failed and no cached data available at %s', cached_file)
-            raise
+        final_df = pd.read_csv('https://gist.githubusercontent.com/curran/a08a1080b88344b0c8a7/raw/iris.csv')
+        final_df = preprocess_data(final_df)
+        save_data(final_df, 'data/')
 
 
 if __name__ == "__main__":

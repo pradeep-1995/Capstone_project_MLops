@@ -29,9 +29,10 @@ jobs:
       - name: install dependencies
         run: |
           pip install --upgrade pip
-          grep -v pywin32 requirements.txt > requirements-ci.txt
-          pip install -r requirements-ci.txt
-          pip install dvc[s3]
+          sed '/pywin32/d' requirements.txt > requirements-ci.txt
+          echo "Installing from requirements-ci.txt..."
+          pip install -r requirements-ci.txt --prefer-binary || true
+          pip install numpy scipy scikit-learn pandas matplotlib dvc[s3]
 
       - name: run pipeline
         env:

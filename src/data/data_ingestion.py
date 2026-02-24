@@ -103,7 +103,7 @@ def main():
 
         # Connect to MongoDB and load data into a DataFrame
         import pymongo
-        client = pymongo.MongoClient(connection_url)
+        client = pymongo.MongoClient(connection_url, serverSelectionTimeoutMS=5000)
         data_base = client[db_name]
         collection = data_base[collection_name]
 
@@ -117,8 +117,14 @@ def main():
         save_data(final_df, 'data/')
 
     except (pymongo.errors.ServerSelectionTimeoutError, TypeError, AttributeError) as e:
-        logging.error('MongoDB connection error: %s', e)
-        raise
+        logging.warning('MongoDB connection error (falling back to cached data): %s', e)
+        # Fall back to loading preprocessed data from CSV if it exists
+        if os.path.exists('data/preprocessed_data.csv'):
+            logging.info('Loading cached preprocessed data from CSV')
+            final_df = pd.read_csv('data/preprocessed_data.csv')
+        else:
+            logging.error('MongoDB connection failed and no cached data available')
+            raise
 
 
 if __name__ == "__main__":

@@ -30,8 +30,12 @@ class TestModelLoading(unittest.TestCase):
 
         # Load the new model from MLflow model registry
         cls.new_model_name = "my_model"
-        cls.new_model_version = mlflow.get_latest_versions(cls.model_name, stages=["Staging"])[0].version
-        cls.new_model_uri = f"models:/{cls.model_name}/{cls.model_version}"
+        client = mlflow.tracking.MlflowClient()
+        versions = client.get_latest_versions(cls.new_model_name, stages=["Staging"])
+        if not versions:
+            raise ValueError(f"No model versions found for {cls.new_model_name} in Staging stage")
+        cls.new_model_version = versions[0].version
+        cls.new_model_uri = f"models:/{cls.new_model_name}/{cls.new_model_version}"
         cls.new_model = mlflow.sklearn.load_model(cls.new_model_uri)
 
         # Load the test dataset
@@ -51,7 +55,7 @@ class TestModelLoading(unittest.TestCase):
 
     def test_model_signature(self):
         """Test if the model has the expected signature."""
-        input_df = pd.DataFrame([self.test_data.iloc[0].values], columns=self.test_data.columns)    
+        input_df = pd.DataFrame([self.X_test_data.iloc[0].values], columns=self.X_test_data.columns)    
 
         predict_new = self.new_model.predict(input_df)
         self.assertEqual(len(predict_new), 1, "Model prediction output length mismatch")

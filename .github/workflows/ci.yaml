@@ -47,3 +47,20 @@ jobs:
           CAPSTONE_TEST: ${{ secrets.MLOPS_TEST }}
         run: |
           dvc repro
+
+      - name: Run Model test
+        env:
+          CAPSTONE_TEST: ${{ secrets.MLOPS_TEST }}
+        run: |
+          python -m unittest tests/test_model.py
+
+      - name: Promote model to production
+        if: success()
+        env:
+          CAPSTONE_TEST: ${{ secrets.MLOPS_TEST }}
+        run: python scripts/promote_model.py
+
+      - name: Run API test
+        env:
+          CAPSTONE_TEST: ${{ secrets.MLOPS_TEST }}
+        run: python -m unittest tests/test_app.py

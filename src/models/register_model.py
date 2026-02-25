@@ -16,27 +16,26 @@ warnings.filterwarnings("ignore")
 # Below code block is for production use
 # -------------------------------------------------------------------------------------
 # Set up DagsHub credentials for MLflow tracking
-dagshub_token = os.getenv("CAPSTONE_TEST")
-if not dagshub_token:
-    raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
+#dagshub_token = os.getenv("CAPSTONE_TEST")
+#if not dagshub_token:
+#    raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
 
-os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
-os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+#os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+#os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
-dagshub_url = "https://dagshub.com"
-repo_owner = "pradeep-1995"
-repo_name = "Capstone_project_MLops"
-
+#dagshub_url = "https://dagshub.com"
+#repo_owner = "pradeep-1995"
+#repo_name = "Capstone_project_MLops"
 
 # Set up MLflow tracking URI
-mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+#mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
 
 # Below code block is for local use
 # -------------------------------------------------------------------------------------
-#mlflow.set_tracking_uri("https://dagshub.com/pradeep-1995/Capstone_project_MLops.mlflow")
-#dagshub.init(repo_owner='pradeep-1995', repo_name='Capstone_project_MLops', mlflow=True)
+mlflow.set_tracking_uri("https://dagshub.com/pradeep-1995/Capstone_project_MLops.mlflow")
+dagshub.init(repo_owner='pradeep-1995', repo_name='Capstone_project_MLops', mlflow=True)
 # -------------------------------------------------------------------------------------
 
 def load_model_info(file_path: str) -> dict:
@@ -69,14 +68,39 @@ def register_model(model_name: str, model_info: dict):
             # Check if the model exists in the run before registering
             mlflow_client = mlflow.tracking.MlflowClient()
             run = mlflow_client.get_run(run_id)
-            
+
             if run is None:
                 raise ValueError(f"Run ID {run_id} not found in MLflow")
-            
+
             logging.info(f"Found run {run_id} in MLflow")
+
+            # Recursively list available artifacts in the run to help with debugging
+            def _list_all_artifacts(client, run_id, path=""):
+                all_paths = []
+                try:
+                    items = client.list_artifacts(run_id, path=path)
+                except Exception:
+                    return all_paths
+                for item in items:
+                    all_paths.append(item.path)
+                    if item.is_dir:
+                        all_paths.extend(_list_all_artifacts(client, run_id, item.path))
+                return all_paths
+
+            artifacts = _list_all_artifacts(mlflow_client, run_id)
+            logging.info(f"Available artifacts in run (recursive): {artifacts}")
+
+            # Check for presence of MLflow model under the expected model_path
+            expected_mlmodel_path = f"{model_path}/MLmodel"
+            if not any(p == model_path or p.startswith(model_path + "/") or p == expected_mlmodel_path for p in artifacts):
+                logging.warning(
+                    "Model artifact '%s' not found in run. Full artifact list: %s",
+                    model_path,
+                    artifacts,
+                )
         except Exception as e:
             logging.error(f"Could not verify run {run_id}: {e}")
-            logging.error("Please ensure model_evaluation.py was run successfully to log the model to MLflow")
+            logging.error("Please ensure model_evaluation.py was run successfully to log the model to MLflow and that credentials are set in CAPSTONE_TEST")
             raise
 
         model_version = mlflow.register_model(model_uri, model_name)
@@ -102,7 +126,7 @@ def main():
         model_info = load_model_info(model_info_path)
 
         # Register the model in MLflow
-        model_name = '1st_model'
+        model_name = 'my_model'
         register_model(model_name, model_info)
 
     except Exception as e:
